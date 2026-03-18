@@ -405,6 +405,48 @@ jobs:
           armbian_fstype: ${{ inputs.armbian_fstype }}
           builder_name: ${{ inputs.builder_name }}
 
+      - name: Replace DTB for tvi3315a
+        if: ${{ env.PACKAGED_STATUS == 'success' && (inputs.armbian_board == 'tvi3315a' || inputs.armbian_board == 'all') && !cancelled() }}
+        env:
+          CUSTOM_DTB: ${{ github.workspace }}/rk3399-tvi3315a.dtb
+        run: |
+          set -euo pipefail
+          echo "PACKAGED_OUTPUTPATH=${PACKAGED_OUTPUTPATH}"
+          [[ -f "${CUSTOM_DTB}" ]] || { echo "Custom DTB not found at: ${CUSTOM_DTB}"; exit 1; }
+          shopt -s nullglob
+          for img_gz in "${PACKAGED_OUTPUTPATH}"/Armbian_*_rockchip_tvi3315a_*.img.gz; do
+            echo "Processing image: ${img_gz}"
+            img="${img_gz%.gz}"
+            sudo gunzip -f "${img_gz}"
+            loopdev="$(sudo losetup -P -f --show "${img}")"
+            echo "Loop device: ${loopdev}"
+            sudo mkdir -p /mnt/fn_boot
+            sudo mount "${loopdev}p1" /mnt/fn_boot
+            if [[ ! -d "/mnt/fn_boot/dtb/rockchip" ]]; then
+              echo "Expected dtb path missing, listing /mnt/fn_boot:"
+              sudo ls -lah /mnt/fn_boot || true
+              echo "Listing /mnt/fn_boot/dtb:"
+              sudo ls -lah /mnt/fn_boot/dtb || true
+              echo "tvi3315a image does not look like a Rockchip bootfs. Aborting."
+              sudo umount -f /mnt/fn_boot || true
+              sudo losetup -d "${loopdev}" || true
+              exit 1
+            fi
+            sudo install -m 0644 "${CUSTOM_DTB}" "/mnt/fn_boot/dtb/rockchip/rk3399-tvi3315a.dtb"
+            echo "Replaced DTB: /mnt/fn_boot/dtb/rockchip/rk3399-tvi3315a.dtb"
+            echo "Removing other DTBs under /boot/dtb/rockchip ..."
+            sudo find /mnt/fn_boot/dtb/rockchip -maxdepth 1 -type f -name "*.dtb" ! -name "rk3399-tvi3315a.dtb" -delete
+            echo "Remaining DTBs:"
+            sudo ls -lah /mnt/fn_boot/dtb/rockchip || true
+            sudo sync
+            sudo umount -f /mnt/fn_boot
+            sudo losetup -d "${loopdev}"
+            (cd "$(dirname "${img}")" && sudo pigz -qf "$(basename "${img}")" || sudo gzip -qf "$(basename "${img}")")
+            echo "Repacked: ${img}.gz"
+          done
+          shopt -u nullglob
+          echo "Custom DTB injection complete."
+
       - name: Upload rebuilt images to Release
         uses: ncipollo/release-action@main
         if: ${{ env.PACKAGED_STATUS == 'success' && !cancelled() }}

@@ -1070,6 +1070,23 @@ refactor_rootfs() {
         sed -i "s|^#*PasswordAuthentication .*|PasswordAuthentication yes|g" ${ssh_config}
     }
 
+    # Preset default account and Armbian firstlogin settings
+    [[ -f "etc/shadow" ]] && {
+        rootnewpasswd="$(openssl passwd -6 "1234")"
+        sed -i "s|^root:[^:]*:|root:${rootnewpasswd}:|g" etc/shadow
+    }
+    cat >root/.not_logged_in_yet <<'EOF'
+# /root/.not_logged_in_yet
+SET_LANG_BASED_ON_LOCATION="n"
+PRESET_LOCALE="zh_CN.UTF-8"
+PRESET_TIMEZONE="Asia/Shanghai"
+PRESET_ROOT_PASSWORD="1234"
+PRESET_USER_NAME="userf"
+PRESET_USER_PASSWORD="1234"
+PRESET_DEFAULT_REALNAME="Userf"
+PRESET_USER_SHELL="bash"
+EOF
+
     # Adjust the default timeout for service start/stop
     system_conf="etc/systemd/system.conf"
     [[ -f "${system_conf}" ]] && {

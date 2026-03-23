@@ -961,36 +961,6 @@ refactor_bootfs() {
     # Check device configuration files
     [[ -f "${uenv_conf_file}" || -f "${rename_extlinux_file}" || -f "${armbianenv_conf_file}" ]] || error_msg "Missing [ /boot/*Env.txt ]"
 
-    firstrun_enable="${ARMBIAN_FR_ENABLE:-}"
-    if [[ "${firstrun_enable,,}" =~ ^(1|yes|true)$ ]]; then
-        fr_general_delete="${ARMBIAN_FR_GENERAL_DELETE_THIS_FILE_AFTER_COMPLETION:-1}"
-        fr_net_change="${ARMBIAN_FR_NET_CHANGE_DEFAULTS:-1}"
-        fr_eth_enabled="${ARMBIAN_FR_NET_ETHERNET_ENABLED:-1}"
-        fr_wifi_enabled="${ARMBIAN_FR_NET_WIFI_ENABLED:-0}"
-        fr_wifi_ssid="${ARMBIAN_FR_NET_WIFI_SSID:-}"
-        fr_wifi_key="${ARMBIAN_FR_NET_WIFI_KEY:-}"
-        fr_wifi_cc="${ARMBIAN_FR_NET_WIFI_COUNTRYCODE:-}"
-        fr_use_static="${ARMBIAN_FR_NET_USE_STATIC:-0}"
-        fr_static_ip="${ARMBIAN_FR_NET_STATIC_IP:-}"
-        fr_static_mask="${ARMBIAN_FR_NET_STATIC_MASK:-}"
-        fr_static_gw="${ARMBIAN_FR_NET_STATIC_GATEWAY:-}"
-        fr_static_dns="${ARMBIAN_FR_NET_STATIC_DNS:-}"
-
-        cat >armbian_first_run.txt <<EOF
-FR_general_delete_this_file_after_completion=${fr_general_delete}
-FR_net_change_defaults=${fr_net_change}
-FR_net_ethernet_enabled=${fr_eth_enabled}
-FR_net_wifi_enabled=${fr_wifi_enabled}
-FR_net_wifi_ssid=$(printf '%q' "${fr_wifi_ssid}")
-FR_net_wifi_key=$(printf '%q' "${fr_wifi_key}")
-FR_net_wifi_countrycode=$(printf '%q' "${fr_wifi_cc}")
-FR_net_use_static=${fr_use_static}
-FR_net_static_ip=$(printf '%q' "${fr_static_ip}")
-FR_net_static_mask=$(printf '%q' "${fr_static_mask}")
-FR_net_static_gateway=$(printf '%q' "${fr_static_gw}")
-FR_net_static_dns=$(printf '%q' "${fr_static_dns}")
-EOF
-    fi
 }
 
 refactor_rootfs() {

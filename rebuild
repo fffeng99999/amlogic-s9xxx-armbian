@@ -1165,6 +1165,13 @@ EOF
     [[ -d "usr/lib/firmware/brcm" ]] && (
         cd usr/lib/firmware/brcm/ && rm -f ../*.hcd
 
+        # tvi3315a wifi module is brcmfmac43455
+        if [[ "${board}" == "tvi3315a" || "${FDTFILE}" == "rk3399-tvi3315a.dtb" ]]; then
+            [[ -f "brcmfmac43455-sdio.bin" ]] && ln -sf brcmfmac43455-sdio.bin brcmfmac43455-sdio.techvision,tvi3315a.bin
+            [[ -f "brcmfmac43455-sdio.txt" ]] && ln -sf brcmfmac43455-sdio.txt brcmfmac43455-sdio.techvision,tvi3315a.txt
+            [[ -f "brcmfmac43455-sdio.clm_blob" ]] && ln -sf brcmfmac43455-sdio.clm_blob brcmfmac43455-sdio.techvision,tvi3315a.clm_blob
+        fi
+
         # gtking/gtking pro is bcm4356 wifi/bluetooth, wifi5 module AP6356S
         sed -e "s/macaddr=.*/macaddr=${random_macaddr}:00/" "brcmfmac4356-sdio.txt" >"brcmfmac4356-sdio.azw,gtking.txt"
         # gtking/gtking pro is bcm4356 wifi/bluetooth, wifi6 module AP6275S

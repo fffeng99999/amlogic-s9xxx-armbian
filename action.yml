@@ -48,6 +48,90 @@ inputs:
     description: "Set Armbian builder signature."
     required: false
     default: ""
+  set_lang_based_on_location:
+    description: "Firstlogin preset: SET_LANG_BASED_ON_LOCATION"
+    required: false
+    default: ""
+  preset_locale:
+    description: "Firstlogin preset: PRESET_LOCALE"
+    required: false
+    default: ""
+  preset_timezone:
+    description: "Firstlogin preset: PRESET_TIMEZONE"
+    required: false
+    default: ""
+  preset_root_password:
+    description: "Firstlogin preset: PRESET_ROOT_PASSWORD"
+    required: false
+    default: ""
+  preset_user_name:
+    description: "Firstlogin preset: PRESET_USER_NAME"
+    required: false
+    default: ""
+  preset_user_password:
+    description: "Firstlogin preset: PRESET_USER_PASSWORD"
+    required: false
+    default: ""
+  preset_default_realname:
+    description: "Firstlogin preset: PRESET_DEFAULT_REALNAME"
+    required: false
+    default: ""
+  preset_user_shell:
+    description: "Firstlogin preset: PRESET_USER_SHELL"
+    required: false
+    default: ""
+  firstrun_enable:
+    description: "Firstrun preset: generate /boot/armbian_first_run.txt"
+    required: false
+    default: ""
+  fr_general_delete_this_file_after_completion:
+    description: "Firstrun preset: FR_general_delete_this_file_after_completion"
+    required: false
+    default: ""
+  fr_net_change_defaults:
+    description: "Firstrun preset: FR_net_change_defaults"
+    required: false
+    default: ""
+  fr_net_ethernet_enabled:
+    description: "Firstrun preset: FR_net_ethernet_enabled"
+    required: false
+    default: ""
+  fr_net_wifi_enabled:
+    description: "Firstrun preset: FR_net_wifi_enabled"
+    required: false
+    default: ""
+  fr_net_wifi_ssid:
+    description: "Firstrun preset: FR_net_wifi_ssid"
+    required: false
+    default: ""
+  fr_net_wifi_key:
+    description: "Firstrun preset: FR_net_wifi_key"
+    required: false
+    default: ""
+  fr_net_wifi_countrycode:
+    description: "Firstrun preset: FR_net_wifi_countrycode"
+    required: false
+    default: ""
+  fr_net_use_static:
+    description: "Firstrun preset: FR_net_use_static"
+    required: false
+    default: ""
+  fr_net_static_ip:
+    description: "Firstrun preset: FR_net_static_ip"
+    required: false
+    default: ""
+  fr_net_static_mask:
+    description: "Firstrun preset: FR_net_static_mask"
+    required: false
+    default: ""
+  fr_net_static_gateway:
+    description: "Firstrun preset: FR_net_static_gateway"
+    required: false
+    default: ""
+  fr_net_static_dns:
+    description: "Firstrun preset: FR_net_static_dns"
+    required: false
+    default: ""
   # For compile kernel -----
   kernel_source:
     description: "Select the kernel source code"
@@ -204,6 +288,93 @@ runs:
 
             cd ${{ github.action_path }}
             echo -e "Starting to rebuild Armbian..."
+
+            [[ -n "${{ inputs.set_lang_based_on_location }}" ]] && export ARMBIAN_SET_LANG_BASED_ON_LOCATION="$(cat <<'__ARMBIAN_SET_LANG_BASED_ON_LOCATION__'
+${{ inputs.set_lang_based_on_location }}
+__ARMBIAN_SET_LANG_BASED_ON_LOCATION__
+)"
+            [[ -n "${{ inputs.preset_locale }}" ]] && export ARMBIAN_PRESET_LOCALE="$(cat <<'__ARMBIAN_PRESET_LOCALE__'
+${{ inputs.preset_locale }}
+__ARMBIAN_PRESET_LOCALE__
+)"
+            [[ -n "${{ inputs.preset_timezone }}" ]] && export ARMBIAN_PRESET_TIMEZONE="$(cat <<'__ARMBIAN_PRESET_TIMEZONE__'
+${{ inputs.preset_timezone }}
+__ARMBIAN_PRESET_TIMEZONE__
+)"
+            [[ -n "${{ inputs.preset_root_password }}" ]] && export ARMBIAN_PRESET_ROOT_PASSWORD="$(cat <<'__ARMBIAN_PRESET_ROOT_PASSWORD__'
+${{ inputs.preset_root_password }}
+__ARMBIAN_PRESET_ROOT_PASSWORD__
+)"
+            [[ -n "${{ inputs.preset_user_name }}" ]] && export ARMBIAN_PRESET_USER_NAME="$(cat <<'__ARMBIAN_PRESET_USER_NAME__'
+${{ inputs.preset_user_name }}
+__ARMBIAN_PRESET_USER_NAME__
+)"
+            [[ -n "${{ inputs.preset_user_password }}" ]] && export ARMBIAN_PRESET_USER_PASSWORD="$(cat <<'__ARMBIAN_PRESET_USER_PASSWORD__'
+${{ inputs.preset_user_password }}
+__ARMBIAN_PRESET_USER_PASSWORD__
+)"
+            [[ -n "${{ inputs.preset_default_realname }}" ]] && export ARMBIAN_PRESET_DEFAULT_REALNAME="$(cat <<'__ARMBIAN_PRESET_DEFAULT_REALNAME__'
+${{ inputs.preset_default_realname }}
+__ARMBIAN_PRESET_DEFAULT_REALNAME__
+)"
+            [[ -n "${{ inputs.preset_user_shell }}" ]] && export ARMBIAN_PRESET_USER_SHELL="$(cat <<'__ARMBIAN_PRESET_USER_SHELL__'
+${{ inputs.preset_user_shell }}
+__ARMBIAN_PRESET_USER_SHELL__
+)"
+
+            [[ -n "${{ inputs.firstrun_enable }}" ]] && export ARMBIAN_FR_ENABLE="$(cat <<'__ARMBIAN_FR_ENABLE__'
+${{ inputs.firstrun_enable }}
+__ARMBIAN_FR_ENABLE__
+)"
+            [[ -n "${{ inputs.fr_general_delete_this_file_after_completion }}" ]] && export ARMBIAN_FR_GENERAL_DELETE_THIS_FILE_AFTER_COMPLETION="$(cat <<'__ARMBIAN_FR_GENERAL_DELETE_THIS_FILE_AFTER_COMPLETION__'
+${{ inputs.fr_general_delete_this_file_after_completion }}
+__ARMBIAN_FR_GENERAL_DELETE_THIS_FILE_AFTER_COMPLETION__
+)"
+            [[ -n "${{ inputs.fr_net_change_defaults }}" ]] && export ARMBIAN_FR_NET_CHANGE_DEFAULTS="$(cat <<'__ARMBIAN_FR_NET_CHANGE_DEFAULTS__'
+${{ inputs.fr_net_change_defaults }}
+__ARMBIAN_FR_NET_CHANGE_DEFAULTS__
+)"
+            [[ -n "${{ inputs.fr_net_ethernet_enabled }}" ]] && export ARMBIAN_FR_NET_ETHERNET_ENABLED="$(cat <<'__ARMBIAN_FR_NET_ETHERNET_ENABLED__'
+${{ inputs.fr_net_ethernet_enabled }}
+__ARMBIAN_FR_NET_ETHERNET_ENABLED__
+)"
+            [[ -n "${{ inputs.fr_net_wifi_enabled }}" ]] && export ARMBIAN_FR_NET_WIFI_ENABLED="$(cat <<'__ARMBIAN_FR_NET_WIFI_ENABLED__'
+${{ inputs.fr_net_wifi_enabled }}
+__ARMBIAN_FR_NET_WIFI_ENABLED__
+)"
+            [[ -n "${{ inputs.fr_net_wifi_ssid }}" ]] && export ARMBIAN_FR_NET_WIFI_SSID="$(cat <<'__ARMBIAN_FR_NET_WIFI_SSID__'
+${{ inputs.fr_net_wifi_ssid }}
+__ARMBIAN_FR_NET_WIFI_SSID__
+)"
+            [[ -n "${{ inputs.fr_net_wifi_key }}" ]] && export ARMBIAN_FR_NET_WIFI_KEY="$(cat <<'__ARMBIAN_FR_NET_WIFI_KEY__'
+${{ inputs.fr_net_wifi_key }}
+__ARMBIAN_FR_NET_WIFI_KEY__
+)"
+            [[ -n "${{ inputs.fr_net_wifi_countrycode }}" ]] && export ARMBIAN_FR_NET_WIFI_COUNTRYCODE="$(cat <<'__ARMBIAN_FR_NET_WIFI_COUNTRYCODE__'
+${{ inputs.fr_net_wifi_countrycode }}
+__ARMBIAN_FR_NET_WIFI_COUNTRYCODE__
+)"
+            [[ -n "${{ inputs.fr_net_use_static }}" ]] && export ARMBIAN_FR_NET_USE_STATIC="$(cat <<'__ARMBIAN_FR_NET_USE_STATIC__'
+${{ inputs.fr_net_use_static }}
+__ARMBIAN_FR_NET_USE_STATIC__
+)"
+            [[ -n "${{ inputs.fr_net_static_ip }}" ]] && export ARMBIAN_FR_NET_STATIC_IP="$(cat <<'__ARMBIAN_FR_NET_STATIC_IP__'
+${{ inputs.fr_net_static_ip }}
+__ARMBIAN_FR_NET_STATIC_IP__
+)"
+            [[ -n "${{ inputs.fr_net_static_mask }}" ]] && export ARMBIAN_FR_NET_STATIC_MASK="$(cat <<'__ARMBIAN_FR_NET_STATIC_MASK__'
+${{ inputs.fr_net_static_mask }}
+__ARMBIAN_FR_NET_STATIC_MASK__
+)"
+            [[ -n "${{ inputs.fr_net_static_gateway }}" ]] && export ARMBIAN_FR_NET_STATIC_GATEWAY="$(cat <<'__ARMBIAN_FR_NET_STATIC_GATEWAY__'
+${{ inputs.fr_net_static_gateway }}
+__ARMBIAN_FR_NET_STATIC_GATEWAY__
+)"
+            [[ -n "${{ inputs.fr_net_static_dns }}" ]] && export ARMBIAN_FR_NET_STATIC_DNS="$(cat <<'__ARMBIAN_FR_NET_STATIC_DNS__'
+${{ inputs.fr_net_static_dns }}
+__ARMBIAN_FR_NET_STATIC_DNS__
+)"
+
             make_command=""
             [[ -n "${{ inputs.armbian_board }}" ]] && make_command="${make_command} -b ${{ inputs.armbian_board }}"
             [[ -n "${{ inputs.kernel_repo }}" ]] && make_command="${make_command} -r ${{ inputs.kernel_repo }}"

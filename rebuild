@@ -960,6 +960,37 @@ refactor_bootfs() {
 
     # Check device configuration files
     [[ -f "${uenv_conf_file}" || -f "${rename_extlinux_file}" || -f "${armbianenv_conf_file}" ]] || error_msg "Missing [ /boot/*Env.txt ]"
+
+    firstrun_enable="${ARMBIAN_FR_ENABLE:-}"
+    if [[ "${firstrun_enable,,}" =~ ^(1|yes|true)$ ]]; then
+        fr_general_delete="${ARMBIAN_FR_GENERAL_DELETE_THIS_FILE_AFTER_COMPLETION:-1}"
+        fr_net_change="${ARMBIAN_FR_NET_CHANGE_DEFAULTS:-1}"
+        fr_eth_enabled="${ARMBIAN_FR_NET_ETHERNET_ENABLED:-1}"
+        fr_wifi_enabled="${ARMBIAN_FR_NET_WIFI_ENABLED:-0}"
+        fr_wifi_ssid="${ARMBIAN_FR_NET_WIFI_SSID:-}"
+        fr_wifi_key="${ARMBIAN_FR_NET_WIFI_KEY:-}"
+        fr_wifi_cc="${ARMBIAN_FR_NET_WIFI_COUNTRYCODE:-}"
+        fr_use_static="${ARMBIAN_FR_NET_USE_STATIC:-0}"
+        fr_static_ip="${ARMBIAN_FR_NET_STATIC_IP:-}"
+        fr_static_mask="${ARMBIAN_FR_NET_STATIC_MASK:-}"
+        fr_static_gw="${ARMBIAN_FR_NET_STATIC_GATEWAY:-}"
+        fr_static_dns="${ARMBIAN_FR_NET_STATIC_DNS:-}"
+
+        cat >armbian_first_run.txt <<EOF
+FR_general_delete_this_file_after_completion=${fr_general_delete}
+FR_net_change_defaults=${fr_net_change}
+FR_net_ethernet_enabled=${fr_eth_enabled}
+FR_net_wifi_enabled=${fr_wifi_enabled}
+FR_net_wifi_ssid=$(printf '%q' "${fr_wifi_ssid}")
+FR_net_wifi_key=$(printf '%q' "${fr_wifi_key}")
+FR_net_wifi_countrycode=$(printf '%q' "${fr_wifi_cc}")
+FR_net_use_static=${fr_use_static}
+FR_net_static_ip=$(printf '%q' "${fr_static_ip}")
+FR_net_static_mask=$(printf '%q' "${fr_static_mask}")
+FR_net_static_gateway=$(printf '%q' "${fr_static_gw}")
+FR_net_static_dns=$(printf '%q' "${fr_static_dns}")
+EOF
+    fi
 }
 
 refactor_rootfs() {
@@ -1071,21 +1102,44 @@ refactor_rootfs() {
     }
 
     # Preset default account and Armbian firstlogin settings
+    preset_set_lang="${ARMBIAN_SET_LANG_BASED_ON_LOCATION:-n}"
+    preset_locale="${ARMBIAN_PRESET_LOCALE:-zh_CN.UTF-8}"
+    preset_timezone="${ARMBIAN_PRESET_TIMEZONE:-Asia/Shanghai}"
+    preset_root_password="${ARMBIAN_PRESET_ROOT_PASSWORD:-1234}"
+    preset_user_name="${ARMBIAN_PRESET_USER_NAME:-userf}"
+    preset_user_password="${ARMBIAN_PRESET_USER_PASSWORD:-1234}"
+    preset_realname="${ARMBIAN_PRESET_DEFAULT_REALNAME:-Userf}"
+    preset_user_shell="${ARMBIAN_PRESET_USER_SHELL:-bash}"
+
     [[ -f "etc/shadow" ]] && {
-        rootnewpasswd="$(openssl passwd -6 "1234")"
+        rootnewpasswd="$(openssl passwd -6 "${preset_root_password}")"
         sed -i "s|^root:[^:]*:|root:${rootnewpasswd}:|g" etc/shadow
     }
     cat >root/.not_logged_in_yet <<'EOF'
 # /root/.not_logged_in_yet
-SET_LANG_BASED_ON_LOCATION="n"
-PRESET_LOCALE="zh_CN.UTF-8"
-PRESET_TIMEZONE="Asia/Shanghai"
-PRESET_ROOT_PASSWORD="1234"
-PRESET_USER_NAME="userf"
-PRESET_USER_PASSWORD="1234"
-PRESET_DEFAULT_REALNAME="Userf"
-PRESET_USER_SHELL="bash"
+SET_LANG_BASED_ON_LOCATION="__SET_LANG_BASED_ON_LOCATION__"
+PRESET_LOCALE="__PRESET_LOCALE__"
+PRESET_TIMEZONE="__PRESET_TIMEZONE__"
+PRESET_ROOT_PASSWORD="__PRESET_ROOT_PASSWORD__"
+PRESET_USER_NAME="__PRESET_USER_NAME__"
+PRESET_USER_PASSWORD="__PRESET_USER_PASSWORD__"
+PRESET_DEFAULT_REALNAME="__PRESET_DEFAULT_REALNAME__"
+PRESET_USER_SHELL="__PRESET_USER_SHELL__"
 EOF
+    escape_dq() {
+        local s="${1:-}"
+        s="${s//\\/\\\\}"
+        s="${s//\"/\\\"}"
+        printf "%s" "${s}"
+    }
+    sed -i "s|__SET_LANG_BASED_ON_LOCATION__|$(escape_dq "${preset_set_lang}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_LOCALE__|$(escape_dq "${preset_locale}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_TIMEZONE__|$(escape_dq "${preset_timezone}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_ROOT_PASSWORD__|$(escape_dq "${preset_root_password}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_USER_NAME__|$(escape_dq "${preset_user_name}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_USER_PASSWORD__|$(escape_dq "${preset_user_password}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_DEFAULT_REALNAME__|$(escape_dq "${preset_realname}")|g" root/.not_logged_in_yet
+    sed -i "s|__PRESET_USER_SHELL__|$(escape_dq "${preset_user_shell}")|g" root/.not_logged_in_yet
 
     # Adjust the default timeout for service start/stop
     system_conf="etc/systemd/system.conf"
